@@ -28,8 +28,8 @@ def create_cloud_server():
         'bandwidth': int(create_cloud_server_field[params['bandwidth']]),
     }
     if create_cloud_server_status == 'Done':
-        if is_status == 'no':
-            status_data = json.dumps({"fields": {str(params['status']): "yes"}})
+        if is_status == 'yes':
+            status_data = json.dumps({"fields": {str(params['status']): "no"}})
             url = 'http://localhost:8081/rest/api/2/issue/%s' % comments_field
             response = requests.put(url, headers=HEADERS, data=status_data, auth=AUTH)
             api_obj.provision(server_params)
@@ -48,8 +48,8 @@ def create_cloud_volume():
     customfield_size_value = int(create_cloud_volume_field[params['size']])
     customfield_tags_value = create_cloud_volume_field[params['tags']]
     if create_cloud_volume_status == 'Done':
-        if is_status == 'no':
-            status_data = json.dumps({"fields": {str(params['status']): "yes"}})
+        if is_status == 'yes':
+            status_data = json.dumps({"fields": {str(params['status']): "no"}})
             url = 'http://localhost:8081/rest/api/2/issue/%s' % comments_field
             response = requests.put(url, headers=HEADERS, data=status_data, auth=AUTH)
             api_obj.create_volume(customfield_datacenter_value, customfield_size_value, customfield_tags_value, cluster=None, ioparams={})
