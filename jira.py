@@ -8,10 +8,11 @@ app = Flask(__name__)
 def create_cloud_server():
     network_fields = ''
     create_cloud_server_field = json.loads(request.data)['issue']['fields']
+    create_cloud_server_status = create_cloud_server_field['status']['name']
     comments_field = json.loads(request.data)['issue']['key']
     for field in create_cloud_server_field[params['network']]:
         network_fields += (str(field['value']) + ',')
-    create_cloud_server_status = create_cloud_server_field['status']['name']
+    is_status = create_cloud_server_field[params['status']]
     server_params = {
         'token': token,
         'name': create_cloud_server_field[params['csname']],
@@ -27,23 +28,32 @@ def create_cloud_server():
         'bandwidth': int(create_cloud_server_field[params['bandwidth']]),
     }
     if create_cloud_server_status == 'Done':
-        api_obj.provision(server_params)
-        add_comments_field(comments_field, '创建云主机成功')
+        if is_status == 'no':
+            status_data = json.dumps({"fields": {str(params['status']): "yes"}})
+            url = 'http://localhost:8081/rest/api/2/issue/%s' % comments_field
+            response = requests.put(url, headers=HEADERS, data=status_data, auth=AUTH)
+            api_obj.provision(server_params)
+            comment = add_comments_field(comments_field, '创建云主机成功')
     return 'create_cloud_server!'
 
 
 @app.route('/add_cloud_volume', methods=['GET', 'POST'])
 def create_cloud_volume():
+    # print request.data
     comments_field = json.loads(request.data)['issue']['key']
     create_cloud_volume_field = json.loads(request.data)['issue']['fields']
+    is_status = create_cloud_volume_field[params['status']]
     create_cloud_volume_status = create_cloud_volume_field['status']['name']
     customfield_datacenter_value = create_cloud_volume_field[params['datacenter']]['value']
     customfield_size_value = int(create_cloud_volume_field[params['size']])
     customfield_tags_value = create_cloud_volume_field[params['tags']]
-    print create_cloud_volume_status
     if create_cloud_volume_status == 'Done':
-        api_obj.create_volume(customfield_datacenter_value, customfield_size_value, customfield_tags_value, cluster=None, ioparams={})
-        add_comments_field(comments_field, '创建云硬盘成功')
+        if is_status == 'no':
+            status_data = json.dumps({"fields": {str(params['status']): "yes"}})
+            url = 'http://localhost:8081/rest/api/2/issue/%s' % comments_field
+            response = requests.put(url, headers=HEADERS, data=status_data, auth=AUTH)
+            api_obj.create_volume(customfield_datacenter_value, customfield_size_value, customfield_tags_value, cluster=None, ioparams={})
+            comment = add_comments_field(comments_field, '创建云硬盘成功')
     return 'add_cloud_volume!'
 
 
